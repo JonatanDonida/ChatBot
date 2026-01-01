@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>Janela Flutuante</title>
+</head>
+
+<body>
+
+    <div class="chatConatiner" id="chatConatiner">
+        <div class="titlebar">Bem vindo</div>
+        <div class="chatHistoric" id="chatHistoric"></div>
+        
+        <p id="status"></p>
+        <div class="footer">
+            <div class="chatBox" id="chatBox">
+                <textarea type="text" id="userInput"></textarea>
+                <span class="placeholder">Digite sua mensagem...</span>
+                <span onclick="sendMessage()" class="input-icon">➤</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+
+</html>
