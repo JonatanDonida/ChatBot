@@ -44,29 +44,40 @@ Você é um classificador de intenção.
 Categorias possíveis:
 - wifi
 - impressora
+- suporte
 - nenhuma
 
 Responda SOMENTE com uma palavra da lista acima.
 `;
 
 // ===============================
-// CACHE DE PROMPTS ESPECÍFICOS
+// CACHE DE PROMPTS
 // ===============================
 const promptCache = {};
 
-function loadSpecificPrompt(intent) {
-  if (!intent || intent === 'nenhuma') return null;
+// ===============================
+// MAPA DE INTENÇÕES → ARQUIVOS
+// ===============================
+// Caminho relativo à pasta "prompts"
+const INTENT_MAP = {
+  wifi: 'wifi/wifi',               // prompts/wifi/wifi.txt → sempre usado quando o usuário pergunta sobre Wi-Fi
+  certificado: 'wifi/certificado', // prompts/wifi/certificado.txt → usado só se a pergunta for sobre certificado
+  impressora: 'wifi/perfis',       // prompts/wifi/perfis.txt → usado quando a pergunta for sobre impressoras/perfis
+  suporte: 'suporte'               // prompts/suporte.txt → perguntas de suporte genérico
+};
 
-  if (!promptCache[intent]) {
-    const filePath = path.join(__dirname, 'prompts', `${intent}.txt`);
+function loadSpecificPrompt(intentKey) {
+  if (!intentKey) return null;
 
+  if (!promptCache[intentKey]) {
+    const filePath = path.join(__dirname, 'prompts', `${intentKey}.txt`);
     if (!fs.existsSync(filePath)) return null;
-
-    promptCache[intent] = fs.readFileSync(filePath, 'utf-8');
+    promptCache[intentKey] = fs.readFileSync(filePath, 'utf-8');
   }
 
-  return promptCache[intent];
+  return promptCache[intentKey];
 }
+
 
 // ===============================
 // IA DECIDE A INTENÇÃO
@@ -117,9 +128,14 @@ app.post('/chat', async (req, res) => {
   // DETECTA INTENÇÃO
   // ===============================
   const intent = await detectIntentWithAI(message);
-  const specificPrompt = loadSpecificPrompt(intent);
 
-  // injeta documento específico (se houver)
+  // Mapeia intenção para arquivo de prompt
+  const intentKey = INTENT_MAP[intent] || null;
+  const specificPrompt = loadSpecificPrompt(intentKey);
+
+  // ===============================
+  // INJETA DOCUMENTO ESPECÍFICO (SE HOUVER)
+  // ===============================
   if (specificPrompt) {
     conversations[sessionId].push({
       role: 'system',
@@ -128,18 +144,23 @@ app.post('/chat', async (req, res) => {
   }
 
   // ===============================
-  // MENSAGEM DO USUÁRIO
+  // ADICIONA MENSAGEM DO USUÁRIO
   // ===============================
   conversations[sessionId].push({
     role: 'user',
     content: message
   });
 
-  // mantém apenas as últimas 20 mensagens
+  // ===============================
+  // MANTÉM SOMENTE AS ÚLTIMAS 20 MENSAGENS
+  // ===============================
   if (conversations[sessionId].length > 20) {
     conversations[sessionId] = conversations[sessionId].slice(-20);
   }
 
+  // ===============================
+  // ENVIA PARA A IA
+  // ===============================
   try {
     const ollamaResponse = await axios.post(
       'http://localhost:11434/api/chat',
@@ -150,8 +171,7 @@ app.post('/chat', async (req, res) => {
       }
     );
 
-    const aiMessage =
-      ollamaResponse.data.message?.content ?? 'Sem resposta';
+    const aiMessage = ollamaResponse.data.message?.content ?? 'Sem resposta';
 
     // resposta da IA no histórico
     conversations[sessionId].push({

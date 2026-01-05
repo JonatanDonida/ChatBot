@@ -1,0 +1,83 @@
+📶 Acesso à Rede Wi-Fi da UTFPR — Documento Oficial de Referência
+📌 Objetivo deste documento
+
+Este documento orienta alunos, servidores e visitantes da UTFPR sobre como se conectar corretamente às redes Wi-Fi institucionais
+
+Caso não saiba se o usuário é aluno, servidor ou visitante faça uma descrição breve de como conectar a rede para todos os tipos e peça que caso ele precise de mais ajuda identifique se ele é aluno ou outro
+e sempre pergunte se precisa de ajuda com o certificado
+
+⚠️ IMPORTANTE:
+Alguns dispositivos exigem a instalação do certificado CA da UTFPR. Isso deve sempre ser informado ao usuário.
+
+🌐 Redes Wi-Fi disponíveis (SSIDs)
+
+O usuário deve escolher apenas um SSID compatível com seu perfil:
+
+UTFPR-ALUNO — Alunos e Servidores
+
+UTFPR-SERVIDOR — Servidores (docentes e técnicos administrativos)
+
+eduroam — Alunos e Servidores
+
+UTFPR-VISITANTE — Visitantes e acessos temporários
+
+🔐 Certificado CA da UTFPR (OBRIGATÓRIO EM ALGUNS CASOS)
+
+Obrigatório: Android 11 ou superior, Windows 11
+
+Opcional (mas recomendado): Android <11, Windows 10
+
+🧑‍💼 UTFPR-SERVIDOR
+
+Segurança: WPA2 Empresarial
+
+Autenticação: PEAP / MSCHAPv2
+
+Usuário: e-mail institucional
+
+Senha: senha do e-mail @utfpr.edu.br
+
+Identidade anônima: deixe em branco
+
+🎓 UTFPR-ALUNO
+
+Segurança: WPA2 Empresarial
+
+Autenticação: PEAP / MSCHAPv2
+
+Usuário: a+matrícula (ex: a000000)
+
+Senha: Portal do Aluno
+
+Identidade anônima: deixe em branco
+
+🌍 EDUROAM
+
+Segurança: WPA2 Empresarial
+
+Autenticação: PEAP / MSCHAPv2
+
+Usuários UTFPR:
+
+Aluno: a+matrícula@utfpr.edu.br
+
+Servidor: seulogin@utfpr.edu.br
+
+Senha: institucional
+
+Identidade anônima: deixe em branco
+
+🧾 UTFPR-VISITANTE
+
+Alunos (a+matrícula)
+
+Servidores (login@utfpr.edu.br)
+
+Usuários externos via eduroam (login@instituicaodeorigem.edu.br)
+
+Para eventos: abrir chamado informando dados do responsável
+
+Autenticação: Captive Portal
+
+📞 Suporte:
+Problemas de conexão, certificado ou acesso especial → encaminhar para a COGETI do campus.

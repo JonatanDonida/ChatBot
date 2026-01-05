@@ -1,0 +1,84 @@
+🔐 Instalação do Certificado CA da UTFPR
+
+📎 Certificado CA oficial (único para todos os sistemas):
+👉 https://ajuda.utfpr.edu.br/arquivos/wifi/ca.pem
+
+🪟 Windows 10 / 11 (baseado no guia oficial do site) 
+Sistemas Institucionais de TI - UTFPR
+
+Clique em ca.pem para baixar o certificado CA.
+
+Renomeie (se desejar) para: wifi.utfpr.edu.br.
+
+Abra o Menu Iniciar e pesquise por Certificados → Gerenciar Certificados do Computador.
+
+Na coluna da esquerda, clique com o botão direito em Autoridades de Certificação Raiz Confiáveis.
+
+Escolha Todas as tarefas > Importar.
+
+Clique em Procurar, selecione o certificado baixado e avance.
+
+Marque Colocar todos os certificados no repositório a seguir e confirme onde está escrito “Autoridades de Certificação Raiz Confiáveis”.
+
+Conclua o assistente e feche a janela.
+
+🧠 Resultado: o certificado CA da UTFPR passa a ser considerado confiável no sistema, permitindo autenticação segura das redes WPA2 Enterprise. 
+Sistemas Institucionais de TI - UTFPR
+
+🤖 Android (11 ou superior) (detalhado conforme o guia oficial) 
+Sistemas Institucionais de TI - UTFPR
+
+Clique em ca.pem para baixar o certificado CA no dispositivo.
+
+Vá em Configurações do Android.
+
+Acesse Segurança → Criptografia & credenciais.
+
+Escolha Instalar certificado → Certificado de Wi-Fi.
+
+Navegue até a pasta de Downloads e selecione o arquivo ca.pem.
+
+Nomeie o certificado como wifi.utfpr.edu.br e confirme.
+
+O sistema exibirá que o certificado foi instalado.
+
+Agora abra Configurações > Rede e Internet > Wi‑Fi.
+
+Selecione a rede UTFPR (UTFPR‑SERVIDOR, UTFPR‑ALUNO ou eduroam).
+
+Em Certificado CA, escolha o item wifi.utfpr.edu.br.
+
+Configure Status de Certificado on‑line para “Não validar”.
+
+Defina o campo Domínio como: utfpr.edu.br.
+
+Insira usuário e senha conforme sua rede:
+
+Servidor: login institucional (sem @utfpr.edu.br)
+
+Aluno: início com a + matrícula
+
+Conecte.
+
+Se aparecer opção identidade anônima, deixe em branco. 
+Sistemas Institucionais de TI - UTFPR
+
+🐧 Linux (conforme instruções oficiais da UTFPR) 
+Sistemas Institucionais de TI - UTFPR
+
+Clique em ca.pem para baixar o certificado CA.
+
+Acesse as Configurações do sistema.
+
+Entre em Wi‑Fi.
+
+Clique na rede UTFPR‑SERVIDOR e depois em Configuração.
+
+Vá até a opção Segurança.
+
+Em Certificado CA, escolha o certificado ca.pem que foi baixado.
+
+Clique em Aplicar.
+
+Tente conectar novamente. 
+Sistemas Institucionais de TI - UTFPR
