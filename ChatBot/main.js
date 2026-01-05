@@ -1,11 +1,56 @@
 const chatConatiner = document.getElementById("chatConatiner");
 const title = chatConatiner.querySelector(".titlebar");
+const textarea = document.getElementById("userInput");
 
 let action = null;
 let startX, startY, startW, startH, startTop, startLeft;
 
 const edge = 8;
+//---------------- TEXTO PADRÃO ----------------
+function showInitialMessage() {
+    const chatHistoric = document.getElementById('chatHistoric');
 
+    const markdown = `
+### 👋 Olá!
+
+Sou o assistente da **UTFPR**.
+
+Posso ajudar você a:
+
+- 📶 Conectar ao **Wi-Fi do campus**
+- 🖨️ Configurar **impressoras**
+
+Como posso te ajudar?`;
+
+    const html = marked.parse(markdown);
+
+    chatHistoric.innerHTML += `
+      <div class="message ai">
+        <strong>AI:</strong>
+        <div class="markdown">${html}</div>
+      </div>
+    `;
+
+    chatHistoric.scrollTop = chatHistoric.scrollHeight;
+
+    marked.setOptions({
+        breaks: true,
+        gfm: true
+    });
+
+}
+
+// dispara quando a página carregar
+window.addEventListener('load', showInitialMessage);
+
+
+//---------------- ENVIAR TEXTO ----------------
+textarea.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault(); // evita pular linha
+        sendMessage();
+    }
+});
 // ---------------- CURSOR DINÂMICO ----------------
 chatConatiner.addEventListener("mousemove", (e) => {
     const rect = chatConatiner.getBoundingClientRect();
@@ -140,12 +185,16 @@ function sendMessage() {
     })
         .then(response => response.json())
         .then(data => {
-            const aiMessage = data.choices[0].message.content;
-            chatHistoric.innerHTML += `<div class="message ai"><strong>AI:</strong> ${aiMessage}</div>`;
+            console.log("Resposta do backend:", data);
+            const rawMarkdown = data.choices?.[0]?.message?.content ?? 'Sem resposta';
+            const renderedHTML = marked.parse(rawMarkdown);
+            chatHistoric.innerHTML += `<div class="message ai"><strong>AI:</strong><div class="markdown">${renderedHTML}</div></div>`;
             status.innerHTML = "";
             enableChatBox();
             chatHistoric.scrollTop = chatHistoric.scrollHeight;
         })
+
+
         .catch(error => {
             console.error('Error:', error);
             status.innerHTML = "Erro ao enviar mensagem.";
