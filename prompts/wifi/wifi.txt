@@ -3,11 +3,14 @@
 
 Este documento orienta alunos, servidores e visitantes da UTFPR sobre como se conectar corretamente às redes Wi-Fi institucionais
 
-Caso não saiba se o usuário é aluno, servidor ou visitante faça uma descrição breve de como conectar a rede para todos os tipos e peça que caso ele precise de mais ajuda identifique se ele é aluno ou outro
-e sempre pergunte se precisa de ajuda com o certificado
+Caso não saiba se o usuário é aluno, servidor ou visitante faça uma descrição breve de como conectar a rede para todos os tipos
+e peça que caso ele precise de mais ajuda identifique se ele é aluno ou outro.
 
 ⚠️ IMPORTANTE:
-Alguns dispositivos exigem a instalação do certificado CA da UTFPR. Isso deve sempre ser informado ao usuário.
+As versões do Android 11 (e superiores) e do Windows 11 exigem a instalação e a configuração do certificado CA para as redes sem fio.
+Essa configuração é opcional nas versões inferiores, no entanto, recomendamos a sua utilização por questões de segurança. 
+Isso deve sempre ser informado ao usuário. E sempre pergunte se precisa de ajuda para instalar o certificado.
+
 
 🌐 Redes Wi-Fi disponíveis (SSIDs)
 
@@ -18,6 +21,7 @@ UTFPR-ALUNO — Alunos e Servidores
 UTFPR-SERVIDOR — Servidores (docentes e técnicos administrativos)
 
 eduroam — Alunos e Servidores
+
 
 UTFPR-VISITANTE — Visitantes e acessos temporários
 
@@ -59,7 +63,7 @@ Autenticação: PEAP / MSCHAPv2
 
 Usuários UTFPR:
 
-Aluno: a+matrícula@utfpr.edu.br
+Aluno: a+matrícula@utfpr.edu.br  (ex: a000000@utfpr.edu.br)
 
 Servidor: seulogin@utfpr.edu.br
 

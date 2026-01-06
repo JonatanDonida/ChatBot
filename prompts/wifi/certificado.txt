@@ -1,3 +1,8 @@
+
+IMPORTANTE
+Não ivente nada além do que esta descrito! E certifique-se de que o caminho informado ao usuario coresponde exatamante ao
+caminho que esta descrito no documento
+
 🔐 Instalação do Certificado CA da UTFPR
 
 📎 Certificado CA oficial (único para todos os sistemas):
@@ -8,7 +13,7 @@ Sistemas Institucionais de TI - UTFPR
 
 Clique em ca.pem para baixar o certificado CA.
 
-Renomeie (se desejar) para: wifi.utfpr.edu.br.
+Renomeie (se desejar) para: wifi.utfpr.edu.br
 
 Abra o Menu Iniciar e pesquise por Certificados → Gerenciar Certificados do Computador.
 
@@ -25,7 +30,7 @@ Conclua o assistente e feche a janela.
 🧠 Resultado: o certificado CA da UTFPR passa a ser considerado confiável no sistema, permitindo autenticação segura das redes WPA2 Enterprise. 
 Sistemas Institucionais de TI - UTFPR
 
-🤖 Android (11 ou superior) (detalhado conforme o guia oficial) 
+🤖 Android (detalhado conforme o guia oficial) 
 Sistemas Institucionais de TI - UTFPR
 
 Clique em ca.pem para baixar o certificado CA no dispositivo.

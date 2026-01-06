@@ -7,6 +7,8 @@
 
 * {
     box-sizing: border-box;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
 }
 
 .chatConatiner {
@@ -29,7 +31,6 @@
     background: linear-gradient(135deg, var(--primary-color), #ffcc00);
     color: var(--secondary-color);
     cursor: move;
-    padding: 6px 10px;
     font-weight: bold;
     border-radius: 10px 10px 0 0;
     text-align: center; 
@@ -172,15 +173,13 @@ input[type="text"] {
 }
 
 .markdown pre {
-  background: #111;
-  color: #eee;
   padding: 10px;
   border-radius: 6px;
   overflow-x: auto;
 }
 
 .markdown code {
-  background: #222;
   padding: 2px 6px;
   border-radius: 4px;
+  
 }

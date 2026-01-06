@@ -41,14 +41,33 @@ const GENERAL_PROMPT = fs.readFileSync(
 const INTENT_PROMPT = `
 Você é um classificador de intenção.
 
+Classifique a pergunta do usuário em APENAS UMA categoria.
+
+Use "certificado" SOMENTE quando a pergunta for especificamente sobre:
+- instalar certificado
+- certificado CA
+- erro de certificado
+- ca.pem
+- android 11
+- windows 11
+- certificado wifi
+
+Use "wifi" quando a pergunta for sobre:
+- redes disponíveis
+- como conectar no wifi
+- UTFPR-ALUNO, SERVIDOR, eduroam
+- parâmetros de conexão
+
 Categorias possíveis:
 - wifi
+- certificado
 - impressora
 - suporte
 - nenhuma
 
 Responda SOMENTE com uma palavra da lista acima.
 `;
+
 
 // ===============================
 // CACHE DE PROMPTS
@@ -58,7 +77,6 @@ const promptCache = {};
 // ===============================
 // MAPA DE INTENÇÕES → ARQUIVOS
 // ===============================
-// Caminho relativo à pasta "prompts"
 const INTENT_MAP = {
   wifi: 'wifi/wifi',               // prompts/wifi/wifi.txt → sempre usado quando o usuário pergunta sobre Wi-Fi
   certificado: 'wifi/certificado', // prompts/wifi/certificado.txt → usado só se a pergunta for sobre certificado
