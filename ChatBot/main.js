@@ -160,7 +160,7 @@ function sendMessage() {
     const message = textarea.value;
 
     if (message.trim() === "") {
-        container.style.border = "1px solid red";
+        textarea.style.border = "2.5px solid red";
         return;
     }
     container.style.border = "1px solid transparent";
@@ -173,7 +173,11 @@ function sendMessage() {
     textarea.value = '';
     placeholder.style.display = "block";
 
-    status.innerHTML = "Carregando...";
+    let dots = 0;
+    const loadingTime = setInterval(() => {
+        status.innerHTML = "Carregando" + ".".repeat(dots % 4);
+        dots++;
+    }, 400);
     disableChatBox();
 
     fetch('http://localhost:3001/chat', {
@@ -204,12 +208,17 @@ function sendMessage() {
 
 function disableChatBox() {
     const chatBox = document.getElementById("chatBox");
+    const input = document.getElementById("userInput");
     chatBox.style.pointerEvents = "none";
     chatBox.style.opacity = "0.6";
+    input.disabled = true;
 }
 
 function enableChatBox() {
     const chatBox = document.getElementById("chatBox");
+    const input = document.getElementById("userInput");
     chatBox.style.pointerEvents = "auto";
     chatBox.style.opacity = "1";
+    input.disabled = false;
+    input.focus();
 }

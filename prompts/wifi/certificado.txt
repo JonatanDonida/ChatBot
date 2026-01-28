@@ -1,11 +1,11 @@
 
-IMPORTANTE
+⚠️ IMPORTANTE
 Não ivente nada além do que esta descrito! E certifique-se de que o caminho informado ao usuario coresponde exatamante ao
 caminho que esta descrito no documento
 
 🔐 Instalação do Certificado CA da UTFPR
 
-📎 Certificado CA oficial (único para todos os sistemas):
+📎 Certificado CA oficial (único para todos os sistemas, sempre passe esse link para que o usuario possa fazer o download):
 👉 https://ajuda.utfpr.edu.br/arquivos/wifi/ca.pem
 
 🪟 Windows 10 / 11 (baseado no guia oficial do site) 
@@ -87,3 +87,7 @@ Clique em Aplicar.
 
 Tente conectar novamente. 
 Sistemas Institucionais de TI - UTFPR
+
+📞 Suporte:
+
+Link do guia detalhado de conexão do wifi da utfpr: https://ajuda.utfpr.edu.br/pt-br/servicos_deinfra/wifi.

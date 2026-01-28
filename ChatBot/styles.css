@@ -3,6 +3,7 @@
     --secondary-color: #f3f4f6;
     --border-color: #2b2b2b;
     --text-color: #000000;
+    --backgroun-color: #f9f9f9;
 }
 
 * {
@@ -19,31 +20,31 @@
     position: fixed;
     bottom: 100px;
     right: 100px;
-    border: 1px solid #2b2b2b;
+    border: 1px solid var(--border-color);
     cursor: default;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     justify-content: space-between;
 }
 
 .titlebar {
     height: 30px;
-    background: linear-gradient(135deg, var(--primary-color), #ffcc00);
+    background: linear-gradient(to left, var(--primary-color), #ffcc00);
     color: var(--secondary-color);
     cursor: move;
     font-weight: bold;
     border-radius: 10px 10px 0 0;
-    text-align: center; 
+    text-align: center;
     font-size: x-large;
 }
 
 .footer {
-    background: var(--secondary-color);
+    background: var(--backgroun-color);
     padding: 1rem;
     border-radius: 0 0 10px 10px;
 }
 
 #status {
+    background-color: var(--backgroun-color);
     padding: 0 1rem;
     margin: 0;
 }
@@ -59,10 +60,13 @@ input[type="text"] {
 .window:hover {
     cursor: default;
 }
+
 .status {
     font-size: 12px;
     color: var(--text-color);
+    background-color: transparent;
 }
+
 .chatBox {
     position: relative;
     width: 100%;
@@ -84,18 +88,14 @@ input[type="text"] {
 .chatBox textarea {
     background-color: var(--border-color);
     resize: none;
-    overflow: hidden;
-    appearance: none;
     width: 100%;
-    padding: 0.5rem 3rem 0.5rem 0.5rem;
+    padding: 0.2rem 3rem 0.2rem 0.5rem;
     border: none;
     border-radius: 5px;
     outline: none;
     color: var(--secondary-color);
-    overflow-y: auto;
     font-family: inherit;
     font-size: inherit;
-    line-height: normal;
 }
 
 .chatBox textarea::-webkit-scrollbar {
@@ -112,26 +112,26 @@ input[type="text"] {
     top: 50%;
     transform: translateY(-50%);
     cursor: pointer;
-    font-size: 14px;
     text-align: center;
-    height: 30px;
-    width: 30px;
-    color: #333;
-    border-radius: 50%;
+    padding-left: 6px;
+    padding-right: 3.5px;
+    border-radius: 100%;
     background-color: var(--primary-color);
     color: var(--secondary-color);
     font-size: 23px;
+    user-select: none;
 }
 
+
 .input-icon:hover {
-    opacity: 0.7;
+    opacity: 0.9;
 }
 
 .chatHistoric {
     flex: 1;
     overflow-y: auto;
     padding: 0.5rem 1rem;
-    background-color: #f9f9f9;
+    background-color: var(--backgroun-color);
 }
 
 .message {
@@ -159,27 +159,27 @@ input[type="text"] {
 .markdown h1,
 .markdown h2,
 .markdown h3 {
-  margin-top: 10px;
-  margin-bottom: 6px;
+    margin-top: 10px;
+    margin-bottom: 6px;
 }
 
 .markdown ul {
-  padding-left: 20px;
-  margin: 8px 0;
+    padding-left: 20px;
+    margin: 8px 0;
 }
 
 .markdown li {
-  margin-bottom: 4px;
+    margin-bottom: 4px;
 }
 
 .markdown pre {
-  padding: 10px;
-  border-radius: 6px;
-  overflow-x: auto;
+    padding: 10px;
+    border-radius: 6px;
+    overflow-x: auto;
 }
 
 .markdown code {
-  padding: 2px 6px;
-  border-radius: 4px;
-  
+    padding: 2px 6px;
+    border-radius: 4px;
+
 }

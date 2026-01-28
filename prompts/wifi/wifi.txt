@@ -79,9 +79,10 @@ Servidores (login@utfpr.edu.br)
 
 Usuários externos via eduroam (login@instituicaodeorigem.edu.br)
 
-Para eventos: abrir chamado informando dados do responsável
-
-Autenticação: Captive Portal
+Os Usuários externo como palestrantes, convidados e professores pesquisadores, também podem obter acesso, 
+solicitando um login provisório diretamenta na Coordenação de TI do Campus (COGETI) ou com a DIRGTI (Reitoria).
 
 📞 Suporte:
 Problemas de conexão, certificado ou acesso especial → encaminhar para a COGETI do campus.
+
+Link do guia para conexão do wifi da utfpr: https://ajuda.utfpr.edu.br/pt-br/servicos_deinfra/wifi.
