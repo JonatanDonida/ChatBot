@@ -88,7 +88,7 @@ function cosineSimilarity(vecA, vecB) {
 }
 
 // Encontra os chunks mais relevantes usando embeddings
-function findRelevantChunks(userVector, allEmbeddings, topK = 3) {
+function findRelevantChunks(userVector, allEmbeddings, topK = 4) {
   const scored = [];
 
   for (const [fileName, chunks] of Object.entries(allEmbeddings)) {
@@ -131,7 +131,7 @@ app.post('/chat', async (req, res) => {
   //Gera embedding da pergunta do usuário
   const userVector = await getUserEmbedding(message);
   //Buscar os top chunks mais relevantes
-  const topChunks = findRelevantChunks(userVector, allEmbeddings, 3);
+  const topChunks = findRelevantChunks(userVector, allEmbeddings, 4);
   // INJETA DOCUMENTO PEDAÇOS IMPORTANTES DO PROMPT ESPECÍFICO
   if (topChunks.length > 0) {
     const relevantText = topChunks
