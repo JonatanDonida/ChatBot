@@ -162,8 +162,10 @@ function sendMessage() {
     if (message.trim() === "") {
         textarea.style.border = "2.5px solid red";
         return;
+    }else{ 
+        container.style.border = "1px solid transparent";
     }
-    container.style.border = "1px solid transparent";
+   
 
     var status = document.getElementById("status");
     var chatBox = document.getElementById("chatBox");
@@ -172,6 +174,7 @@ function sendMessage() {
     chatHistoric.innerHTML += `<div class="message user"><strong>Você:</strong> ${message}</div>`;
     textarea.value = '';
     placeholder.style.display = "block";
+    chatHistoric.scrollTop = chatHistoric.scrollHeight;
 
     let dots = 0;
     const loadingTime = setInterval(() => {
@@ -179,6 +182,7 @@ function sendMessage() {
         dots++;
     }, 400);
     disableChatBox();
+    chatHistoric.scrollTop = chatHistoric.scrollHeight;
 
     fetch('http://localhost:3001/chat', {
         method: 'POST',
@@ -189,6 +193,7 @@ function sendMessage() {
     })
         .then(response => response.json())
         .then(data => {
+            clearInterval(loadingTime)
             console.log("Resposta do backend:", data);
             const rawMarkdown = data.choices?.[0]?.message?.content ?? 'Sem resposta';
             const renderedHTML = marked.parse(rawMarkdown);
@@ -198,8 +203,8 @@ function sendMessage() {
             chatHistoric.scrollTop = chatHistoric.scrollHeight;
         })
 
-
         .catch(error => {
+            clearInterval(loadingTime);
             console.error('Error:', error);
             status.innerHTML = "Erro ao enviar mensagem.";
             enableChatBox();

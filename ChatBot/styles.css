@@ -21,7 +21,7 @@
     bottom: 100px;
     right: 100px;
     border: 1px solid var(--border-color);
-    cursor: default;
+    cursor: default;    
     border-radius: 10px;
     justify-content: space-between;
 }
