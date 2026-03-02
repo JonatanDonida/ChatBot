@@ -9,13 +9,11 @@ As versões do Android 11 (e superiores) e do Windows 11 exigem a instalação e
 Essa configuração é opcional nas versões inferiores, no entanto, recomendamos a sua utilização por questões de segurança. 
 Isso deve sempre ser informado ao usuário. E sempre pergunte se precisa de ajuda para instalar o certificado.
 
-
 🌐 Redes Wi-Fi disponíveis (SSIDs)
 O usuário deve escolher apenas um SSID compatível com seu perfil:
 UTFPR-ALUNO — Alunos e Servidores
 UTFPR-SERVIDOR — Servidores (docentes e técnicos administrativos)
 eduroam — Alunos e Servidores
-
 
 UTFPR-VISITANTE — Visitantes e acessos temporários
 🔐 Certificado CA da UTFPR (OBRIGATÓRIO EM ALGUNS CASOS)
@@ -53,4 +51,4 @@ Os Usuários externo como palestrantes, convidados e professores pesquisadores, 
 solicitando um login provisório diretamenta na Coordenação de TI do Campus (COGETI) ou com a DIRGTI (Reitoria).
 📞 Suporte:
 Problemas de conexão, certificado ou acesso especial → encaminhar para a COGETI do campus.
-Link do guia para conexão do wifi da utfpr: https://ajuda.utfpr.edu.br/pt-br/servicos_deinfra/wifi.
+Link do guia para conexão do wifi da UTFPR: https://ajuda.utfpr.edu.br/pt-br/servicos_deinfra/wifi.

@@ -7,204 +7,125 @@ import { fileURLToPath } from 'url';
 
 const app = express();
 const PORT = 3001;
-const conversations = {};
+let allEmbeddings = {}; 
 
-// ===============================
-// CONFIGURAÇÃO ESM
-// ===============================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use(cors());
 app.use(express.json());
-
-// ===============================
-// SERVIR FRONTEND
-// ===============================
 app.use(express.static(path.join(__dirname, 'ChatBot')));
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'ChatBot', 'index.html'));
-});
+const EMBED_MODEL = 'mxbai-embed-large'; 
+const CHAT_MODEL = 'deepseek-r1:8b';
 
 // ===============================
-// PROMPT GERAL (SEMPRE ATIVO)
+// MOTOR VETORIAL REVISADO
 // ===============================
-const GENERAL_PROMPT = fs.readFileSync(
-  path.join(__dirname, 'prompts', 'geral.txt'),
-  'utf-8'
-);
+async function getVector(text) {
+    try {
+        // Tentativa no endpoint moderno /api/embed
+        const response = await axios.post('http://localhost:11434/api/embed', {
+            model: EMBED_MODEL,
+            input: text
+        });
+
+        if (response.data.embeddings && response.data.embeddings[0]) {
+            return response.data.embeddings[0];
+        }
+        
+        // Backup caso seja versão antiga
+        const oldRes = await axios.post('http://localhost:11434/api/embeddings', {
+            model: EMBED_MODEL,
+            prompt: text
+        });
+        return oldRes.data.embedding;
+
+    } catch (err) {
+        console.error(`❌ Falha Crítica no Ollama: ${err.message}`);
+        return null;
+    }
+}
+
+function cosineSimilarity(vecA, vecB) {
+    if (!vecA || !vecB || vecA.length !== vecB.length) return 0;
+    let dot = 0, mA = 0, mB = 0;
+    for(let i=0; i<vecA.length; i++) {
+        dot += vecA[i] * vecB[i];
+        mA += vecA[i] * vecA[i];
+        mB += vecB[i] * vecB[i];
+    }
+    const mag = Math.sqrt(mA) * Math.sqrt(mB);
+    return mag === 0 ? 0 : dot / mag;
+}
 
 // ===============================
-// CACHE DE PROMPTS
-// ===============================
-const promptCache = {};
-
-// ===============================
-// MAPA DE EMBEDDINGS → ARQUIVOS
+// CARREGAMENTO DA BASE
 // ===============================
 async function loadEmbeddings() {
-  const files = ['wifi', 'certificado'];
-  const allEmbeddings = {};
+    const root = path.join(__dirname, 'prompts');
+    const map = {};
+    if (!fs.existsSync(root)) return {};
 
-  for (const name of files) {
-    const txtPath = path.join(__dirname, 'prompts', `${name}.txt`);
-    if (!fs.existsSync(txtPath)) continue;
+    const files = fs.readdirSync(root).filter(f => f.endsWith('.txt') && f !== 'geral.txt');
 
-    const text = fs.readFileSync(txtPath, 'utf-8');
-    const chunks = text.split('\n\n'); // separa por parágrafos
+    for (const file of files) {
+        const content = fs.readFileSync(path.join(root, file), 'utf-8');
+        const chunks = content.split('\n\n').map(c => c.trim()).filter(c => c.length > 10);
 
-    allEmbeddings[name] = [];
+        map[file] = [];
+        process.stdout.write(`⏳ Vetorizando ${file}... `);
 
-    for (const chunk of chunks) {
-      const response = await axios.post('http://localhost:11434/api/embeddings', {
-        model: 'deepseek-r1:8b',
-        input: chunk,
-      });
-      allEmbeddings[name].push({ chunk, useVector: response.data.embedding });
+        for (const chunk of chunks) {
+            const v = await getVector(chunk);
+            if (v) map[file].push({ chunk, vector: v });
+        }
+        console.log('✅');
     }
-  }
-
-  return allEmbeddings;
-}
-// ===============================
-// EMBEDDINGS → PERGUNTA DO USUÁRIO
-// ===============================
-async function getUserEmbedding(userMessage) {
-  const response = await axios.post('http://localhost:11434/api/embeddings', {
-    model: 'deepseek-r1:8b',
-    input: userMessage,
-  })
-  return response.data.embedding;
-}
-// ===============================
-// ENCONTRA CHUNKS MAIS RELEVANTES
-// ===============================
-function cosineSimilarity(vecA, vecB) {
-  const dot = vecA.reduce((sum, a, i) => sum + a * vecB[i], 0);
-  const magA = Math.sqrt(vecA.reduce((sum, a) => sum + a * a, 0));
-  const magB = Math.sqrt(vecB.reduce((sum, b) => sum + b * b, 0));
-  return dot / (magA * magB);
-}
-
-// Encontra os chunks mais relevantes usando embeddings
-function findRelevantChunks(userVector, allEmbeddings, topK = 4) {
-  const scored = [];
-
-  for (const [fileName, chunks] of Object.entries(allEmbeddings)) {
-    chunks.forEach(chunk => {
-      // Ajuste "useVector" conforme seu JSON, pode ser "vector" ou "embedding"
-      const score = cosineSimilarity(userVector, chunk.useVector);
-      scored.push({ fileName, chunk: chunk.chunk, score });
-    });
-  }
-
-  scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, topK);
+    return map;
 }
 
 // ===============================
 // CHAT
 // ===============================
 app.post('/chat', async (req, res) => {
-  const { message } = req.body;
+    const { message } = req.body;
+    const userVec = await getVector(message);
 
-  if (!message) {
-    return res.status(400).json({ error: 'Mensagem vazia' });
-  }
+    if (!userVec) return res.status(500).json({ error: "Erro no Ollama" });
 
-  const sessionId = getSessionId(req);
+    const scored = [];
+    for (const [file, chunks] of Object.entries(allEmbeddings)) {
+        chunks.forEach(item => {
+            scored.push({ file, chunk: item.chunk, score: cosineSimilarity(userVec, item.vector) });
+        });
+    }
 
-  // ===============================
-  // CRIA SESSÃO COM PROMPT GERAL
-  // ===============================
-  if (!conversations[sessionId]) {
-    conversations[sessionId] = [
-      { role: 'system', content: GENERAL_PROMPT }
-    ];
-  }
-  // ===============================
-  // DETECTA INTENÇÃO
-  // ===============================
-  //Carregar todos os embeddings
-  const allEmbeddings = await loadEmbeddings();
-  //Gera embedding da pergunta do usuário
-  const userVector = await getUserEmbedding(message);
-  //Buscar os top chunks mais relevantes
-  const topChunks = findRelevantChunks(userVector, allEmbeddings, 4);
-  // INJETA DOCUMENTO PEDAÇOS IMPORTANTES DO PROMPT ESPECÍFICO
-  if (topChunks.length > 0) {
-    const relevantText = topChunks
-      .map(c => `DOCUMENTO ${c.fileName.toUpperCase()}:\n${c.chunk}`)
-      .join('\n\n');
+    scored.sort((a, b) => b.score - a.score);
+    const top = scored.slice(0, 7);
 
-    conversations[sessionId].push({ role: 'system', content: relevantText });
-  }
+    console.log(`\n🔍 BUSCA: "${message}"`);
+    top.forEach(c => console.log(`[${c.score.toFixed(7)}] ${c.file}`));
 
-  // ===============================
-  // ADICIONA MENSAGEM DO USUÁRIO
-  // ===============================
-  conversations[sessionId].push({
-    role: 'user',
-    content: message
-  });
+    const rules = fs.existsSync(path.join(__dirname, 'prompts', 'geral.txt')) 
+        ? fs.readFileSync(path.join(__dirname, 'prompts', 'geral.txt'), 'utf-8') : "";
+    
+    const context = top.map(c => `[FONTE: ${c.file}]\n${c.chunk}`).join('\n\n');
 
-  // ===============================
-  // MANTÉM SOMENTE AS ÚLTIMAS 10 MENSAGENS
-  // ===============================
-  if (conversations[sessionId].length > 10) {
-    conversations[sessionId] = conversations[sessionId].slice(-10);
-  }
-
-  // ===============================
-  // ENVIA PARA A IA
-  // ===============================
-  try {
-    const ollamaResponse = await axios.post(
-      'http://localhost:11434/api/chat',
-      {
-        model: 'deepseek-r1:8b',
-        stream: false,
-        messages: conversations[sessionId]
-      }
-    );
-
-    const aiMessage = ollamaResponse.data.message?.content ?? 'Sem resposta';
-
-    // resposta da IA no histórico
-    conversations[sessionId].push({
-      role: 'assistant',
-      content: aiMessage
-    });
-
-    res.json({
-      choices: [
-        {
-          message: { content: aiMessage }
-        }
-      ]
-    });
-
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({
-      choices: [
-        { message: { content: 'Erro ao gerar resposta' } }
-      ]
-    });
-  }
+    try {
+        const ai = await axios.post('http://localhost:11434/api/chat', {
+            model: CHAT_MODEL,
+            stream: false,
+            messages: [
+                { role: 'system', content: `${rules}\n\nCONTEXTO:\n${context}` },
+                { role: 'user', content: message }
+            ]
+        });
+        res.json({ choices: [{ message: { content: ai.data.message.content } }] });
+    } catch (e) { res.status(500).send("Erro na IA"); }
 });
 
-// ===============================
-// START SERVER
-// ===============================
-app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}`);
+app.listen(PORT, async () => {
+    allEmbeddings = await loadEmbeddings();
+    console.log(`\n🚀 Pronto! Acesse http://localhost:${PORT}`);
 });
-
-// ===============================
-// SESSÃO SIMPLES POR IP
-// ===============================
-function getSessionId(req) {
-  return req.ip;
-}
