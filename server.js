@@ -63,14 +63,14 @@ async function loadEmbeddings() {
         const content = fs.readFileSync(path.join(root, file), 'utf-8');
         const chunks = content.split('\n\n').map(c => c.trim()).filter(c => c.length > 10);
 
-        map[file] = []; // Inicializa a lista do arquivo
-        process.stdout.write(`⏳ Vetorizando ${file}... `); // Log de início
+        map[file] = [];
+        process.stdout.write(`⏳ Vetorizando ${file}... `); 
 
         for (const chunk of chunks) {
             const v = await getVector(chunk);
             if (v) map[file].push({ chunk, vector: v });
         }
-        console.log('✅'); // Log de conclusão do arquivo
+        console.log('✅'); 
     }
     return map;
 }
@@ -85,25 +85,36 @@ app.post('/chat', async (req, res) => {
     if (!userVec) return res.status(500).send("Erro no processamento.");
 
     const scored = [];
+    const BOOST_VALUE = 0.10;
+
     for (const [file, chunks] of Object.entries(allEmbeddings)) {
         chunks.forEach(item => {
-            scored.push({ file, chunk: item.chunk, score: cosineSimilarity(userVec, item.vector) });
+            let score = cosineSimilarity(userVec, item.vector);
+            if (item.chunk.includes("IMPORTANTE")) {
+                score += BOOST_VALUE;
+            }
+            scored.push({ 
+                file, 
+                chunk: item.chunk, 
+                score: score 
+            });
         });
     }
 
     scored.sort((a, b) => b.score - a.score);
-    const top = scored.slice(0, 7);
+    const top = scored.slice(0, 7); /* Limita os resultados para maior precisão aumentar o número */
 
-    // Logs bonitinhos da busca no terminal
     console.log(`\n🔍 BUSCA: "${message}"`);
-    top.forEach(c => console.log(`[${c.score.toFixed(7)}] ${c.file}`));
+    top.forEach((c, index) => {
+        const primeiraLinha = c.chunk.split('\n')[0].substring(0, 60);
+        console.log(`${index + 1}. [Score: ${c.score.toFixed(4)}] [Arquivo: ${c.file}]  📝 Trecho: "${primeiraLinha}..."`);
+    });
 
     const rules = fs.existsSync(path.join(__dirname, 'prompts', 'geral.txt')) 
         ? fs.readFileSync(path.join(__dirname, 'prompts', 'geral.txt'), 'utf-8') : "";
     
     const context = top.map(c => `[FONTE: ${c.file}]\n${c.chunk}`).join('\n\n');
 
-    // Configuração do cabeçalho de streaming
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Transfer-Encoding', 'chunked');
 
