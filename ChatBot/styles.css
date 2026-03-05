@@ -108,24 +108,36 @@ input[type="text"] {
 
 .input-icon {
     position: absolute;
-    right: 0.5rem;
+    right: 2px;
     top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    text-align: center;
-    padding-left: 6px;
-    padding-right: 3.5px;
-    border-radius: 100%;
+    transform: translate(0, calc(-50% - 2px)); 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
     background-color: var(--primary-color);
     color: var(--secondary-color);
-    font-size: 23px;
+    cursor: pointer;
     user-select: none;
 }
-
-
 .input-icon:hover {
     opacity: 0.9;
 }
+/* Flecha */
+#sendIcon .icon-content{
+    font-size: 28px;
+    padding-left: 4px;  
+    padding-bottom: 2px; 
+}
+/* Quadrado de parada */
+#sendIcon.stop-active .icon-content{
+    padding-left: 0;   
+    padding-bottom: 0; 
+    font-size: 28px;  
+}
+
 
 .chatHistoric {
     flex: 1;

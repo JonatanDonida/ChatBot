@@ -20,29 +20,19 @@ const EMBED_MODEL = 'mxbai-embed-large';
 const CHAT_MODEL = 'deepseek-r1:8b';
 
 // ===============================
-// MOTOR VETORIAL REVISADO
+// MOTOR VETORIAL
 // ===============================
 async function getVector(text) {
     try {
-        // Tentativa no endpoint moderno /api/embed
         const response = await axios.post('http://localhost:11434/api/embed', {
             model: EMBED_MODEL,
             input: text
         });
-
         if (response.data.embeddings && response.data.embeddings[0]) {
             return response.data.embeddings[0];
         }
-        
-        // Backup caso seja versão antiga
-        const oldRes = await axios.post('http://localhost:11434/api/embeddings', {
-            model: EMBED_MODEL,
-            prompt: text
-        });
-        return oldRes.data.embedding;
-
+        return null;
     } catch (err) {
-        console.error(`❌ Falha Crítica no Ollama: ${err.message}`);
         return null;
     }
 }
@@ -60,7 +50,7 @@ function cosineSimilarity(vecA, vecB) {
 }
 
 // ===============================
-// CARREGAMENTO DA BASE
+// CARREGAMENTO COM LOGS (O que faltava)
 // ===============================
 async function loadEmbeddings() {
     const root = path.join(__dirname, 'prompts');
@@ -73,26 +63,26 @@ async function loadEmbeddings() {
         const content = fs.readFileSync(path.join(root, file), 'utf-8');
         const chunks = content.split('\n\n').map(c => c.trim()).filter(c => c.length > 10);
 
-        map[file] = [];
-        process.stdout.write(`⏳ Vetorizando ${file}... `);
+        map[file] = []; // Inicializa a lista do arquivo
+        process.stdout.write(`⏳ Vetorizando ${file}... `); // Log de início
 
         for (const chunk of chunks) {
             const v = await getVector(chunk);
             if (v) map[file].push({ chunk, vector: v });
         }
-        console.log('✅');
+        console.log('✅'); // Log de conclusão do arquivo
     }
     return map;
 }
 
 // ===============================
-// CHAT
+// CHAT COM LOGS E STREAMING
 // ===============================
 app.post('/chat', async (req, res) => {
     const { message } = req.body;
     const userVec = await getVector(message);
 
-    if (!userVec) return res.status(500).json({ error: "Erro no Ollama" });
+    if (!userVec) return res.status(500).send("Erro no processamento.");
 
     const scored = [];
     for (const [file, chunks] of Object.entries(allEmbeddings)) {
@@ -104,6 +94,7 @@ app.post('/chat', async (req, res) => {
     scored.sort((a, b) => b.score - a.score);
     const top = scored.slice(0, 7);
 
+    // Logs bonitinhos da busca no terminal
     console.log(`\n🔍 BUSCA: "${message}"`);
     top.forEach(c => console.log(`[${c.score.toFixed(7)}] ${c.file}`));
 
@@ -112,20 +103,47 @@ app.post('/chat', async (req, res) => {
     
     const context = top.map(c => `[FONTE: ${c.file}]\n${c.chunk}`).join('\n\n');
 
+    // Configuração do cabeçalho de streaming
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Transfer-Encoding', 'chunked');
+
     try {
-        const ai = await axios.post('http://localhost:11434/api/chat', {
-            model: CHAT_MODEL,
-            stream: false,
-            messages: [
-                { role: 'system', content: `${rules}\n\nCONTEXTO:\n${context}` },
-                { role: 'user', content: message }
-            ]
+        const aiResponse = await axios({
+            method: 'post',
+            url: 'http://localhost:11434/api/chat',
+            data: {
+                model: CHAT_MODEL,
+                messages: [
+                    { role: 'system', content: `${rules}\n\nCONTEXTO:\n${context}` },
+                    { role: 'user', content: message }
+                ],
+                stream: true 
+            },
+            responseType: 'stream'
         });
-        res.json({ choices: [{ message: { content: ai.data.message.content } }] });
-    } catch (e) { res.status(500).send("Erro na IA"); }
+
+        aiResponse.data.on('data', chunk => {
+            const lines = chunk.toString().split('\n');
+            for (const line of lines) {
+                if (!line.trim()) continue;
+                try {
+                    const json = JSON.parse(line);
+                    if (json.message?.content) {
+                        res.write(json.message.content); 
+                    }
+                } catch (e) {}
+            }
+        });
+
+        aiResponse.data.on('end', () => res.end());
+
+    } catch (e) {
+        console.error("❌ Erro na IA:", e.message);
+        res.status(500).end();
+    }
 });
 
 app.listen(PORT, async () => {
     allEmbeddings = await loadEmbeddings();
-    console.log(`\n🚀 Pronto! Acesse http://localhost:${PORT}`);
+    console.log(`\n🚀 Sistema pronto para uso! Acesse http://localhost:${PORT}`);
 });

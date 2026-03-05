@@ -19,7 +19,9 @@
             <div class="chatBox" id="chatBox">
                 <textarea type="text" id="userInput"></textarea>
                 <span class="placeholder">Digite sua mensagem...</span>
-                <span onclick="sendMessage()" class="input-icon">➤</span>
+                <span id="sendIcon" onclick="handleAction()" class="input-icon">
+                    <span class="icon-content">➤</span>
+                </span>
             </div>
         </div>
     </div>

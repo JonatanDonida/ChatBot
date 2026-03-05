@@ -1,7 +1,4 @@
 
-⚠️ IMPORTANTE
-Não ivente nada além do que esta descrito! E certifique-se de que o caminho informado ao usuario coresponde exatamante ao
-caminho que esta descrito no documento
 
 🔐 Instalação do Certificado CA da UTFPR
 📎 Certificado CA oficial (único para todos os sistemas, sempre passe esse link para que o usuario possa fazer o download):

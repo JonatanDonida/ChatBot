@@ -1,11 +1,14 @@
 const chatConatiner = document.getElementById("chatConatiner");
 const title = chatConatiner.querySelector(".titlebar");
 const textarea = document.getElementById("userInput");
+let controller; 
+let isGenerating = false;
 
 let action = null;
 let startX, startY, startW, startH, startTop, startLeft;
 
 const edge = 8;
+
 //---------------- TEXTO PADRÃO ----------------
 function showInitialMessage() {
     const chatHistoric = document.getElementById('chatHistoric');
@@ -26,7 +29,6 @@ Como posso te ajudar?`;
 
     chatHistoric.innerHTML += `
       <div class="message ai">
-        <strong>AI:</strong>
         <div class="markdown">${html}</div>
       </div>
     `;
@@ -43,14 +45,6 @@ Como posso te ajudar?`;
 // dispara quando a página carregar
 window.addEventListener('load', showInitialMessage);
 
-
-//---------------- ENVIAR TEXTO ----------------
-textarea.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault(); // evita pular linha
-        sendMessage();
-    }
-});
 // ---------------- CURSOR DINÂMICO ----------------
 chatConatiner.addEventListener("mousemove", (e) => {
     const rect = chatConatiner.getBoundingClientRect();
@@ -153,77 +147,116 @@ input.addEventListener("focus", () => {
 input.addEventListener("blur", () => {
     if (!input.value) placeholder.style.display = "block";
 });
+//---------------- ENVIAR TEXTO ----------------
+textarea.addEventListener("keydown", (e) => {
+    // Agora verifica se está gerando. Se estiver, impede o Enter.
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault(); 
+        if (!isGenerating) {
+            sendMessage();
+        }
+    }
+});
 
-function sendMessage() {
+// Ajuste na função mestre do ícone
+function handleAction() {
+    if (isGenerating) {
+        stopResponse();
+    } else {
+        sendMessage();
+    }
+}
+
+async function sendMessage() {
     const textarea = document.getElementById("userInput");
-    const container = document.getElementsByClassName("chatBox")[0];
+    const chatHistoric = document.getElementById('chatHistoric');
+    const sendIcon = document.getElementById("sendIcon");
     const message = textarea.value;
 
-    if (message.trim() === "") {
-        textarea.style.border = "2.5px solid red";
-        return;
-    }else{ 
-        container.style.border = "1px solid transparent";
-    }
-   
+    // IMPEDE ENVIAR SE VAZIO OU SE JÁ ESTIVER GERANDO
+    if (message.trim() === "" || isGenerating) return;
 
-    var status = document.getElementById("status");
-    var chatBox = document.getElementById("chatBox");
-    const chatHistoric = document.getElementById('chatHistoric');
+    controller = new AbortController();
+    isGenerating = true;
+    
+    // Feedback visual no ícone
+    sendIcon.innerHTML = `<span class="icon-content" style="margin-bottom: 2px;">■</span>`;
+    sendIcon.classList.add("stop-active");
 
-    chatHistoric.innerHTML += `<div class="message user"><strong>Você:</strong> ${message}</div>`;
+    chatHistoric.innerHTML += `<div class="message user"> ${message}</div>`;
     textarea.value = '';
-    placeholder.style.display = "block";
+    // Garante que o placeholder volte a aparecer
+    if (placeholder) placeholder.style.display = "block";
+    
     chatHistoric.scrollTop = chatHistoric.scrollHeight;
 
-    let dots = 0;
-    const loadingTime = setInterval(() => {
-        status.innerHTML = "Carregando" + ".".repeat(dots % 4);
-        dots++;
-    }, 400);
-    disableChatBox();
-    chatHistoric.scrollTop = chatHistoric.scrollHeight;
+    const aiDiv = document.createElement("div");
+    aiDiv.className = "message ai";
+    aiDiv.innerHTML = `<div class="markdown"><em>Digitando...</em></div>`;
+    chatHistoric.appendChild(aiDiv);
+    const contentTarget = aiDiv.querySelector(".markdown");
 
-    fetch('http://localhost:3001/chat', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ message })
-    })
-        .then(response => response.json())
-        .then(data => {
-            clearInterval(loadingTime)
-            console.log("Resposta do backend:", data);
-            const rawMarkdown = data.choices?.[0]?.message?.content ?? 'Sem resposta';
-            const renderedHTML = marked.parse(rawMarkdown);
-            chatHistoric.innerHTML += `<div class="message ai"><strong>AI:</strong><div class="markdown">${renderedHTML}</div></div>`;
-            status.innerHTML = "";
-            enableChatBox();
-            chatHistoric.scrollTop = chatHistoric.scrollHeight;
-        })
+    lockChatUI(); 
 
-        .catch(error => {
-            clearInterval(loadingTime);
-            console.error('Error:', error);
-            status.innerHTML = "Erro ao enviar mensagem.";
-            enableChatBox();
+    try {
+        const response = await fetch('http://localhost:3001/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message }),
+            signal: controller.signal
         });
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let fullText = "";
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            fullText += chunk;
+
+            let formattedText = fullText
+                .replace('<think>', '\n> 💭 **Pensando:**\n> ')
+                .replace('</think>', '\n\n---\n');
+
+            contentTarget.innerHTML = marked.parse(formattedText);
+            chatHistoric.scrollTop = chatHistoric.scrollHeight;
+        }
+
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            contentTarget.innerHTML += "<br>⚠️ *Interrompido.*";
+        } else {
+            contentTarget.innerHTML = "Erro ao conectar.";
+        }
+    } finally {
+        finishResponse();
+    }
+}
+function stopResponse() {
+    if (controller) {
+        controller.abort();
+    }
 }
 
-function disableChatBox() {
-    const chatBox = document.getElementById("chatBox");
-    const input = document.getElementById("userInput");
-    chatBox.style.pointerEvents = "none";
-    chatBox.style.opacity = "0.6";
-    input.disabled = true;
+function finishResponse() {
+    isGenerating = false;
+    const sendIcon = document.getElementById("sendIcon");
+    sendIcon.innerHTML = `<span class="icon-content">➤</span>`;
+    sendIcon.classList.remove("stop-active");
+    sendIcon.style.color = ""; 
+    unlockChatUI();
 }
 
-function enableChatBox() {
-    const chatBox = document.getElementById("chatBox");
-    const input = document.getElementById("userInput");
-    chatBox.style.pointerEvents = "auto";
-    chatBox.style.opacity = "1";
-    input.disabled = false;
-    input.focus();
+// --- NOVAS FUNÇÕES DE UI ---
+
+function lockChatUI() {
+    document.getElementById("chatBox").style.borderColor = "#ff4d4d";
+}
+
+function unlockChatUI() {
+    document.getElementById("chatBox").style.borderColor = "";
+    textarea.focus();
 }
